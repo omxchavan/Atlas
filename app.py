@@ -6007,28 +6007,23 @@ data = [
   }
 ]
     # Add more countries here in the same format
-
 # Function to start the game
 def start_game():
     print("Welcome to the Atlas Game!")
     score = 0
-    last_country = None  # Variable to keep track of the last country
+    used_countries = set()  # To keep track of the used countries
     
     # The game will continue as long as the player answers correctly
     while True:
-        if last_country is None:
-            # Choose a random country to start the game
-            country = random.choice(data)
-        else:
-            # Start with the next country in the list based on the last country's last character
-            last_char = last_country[-1].lower()
-            # Find all countries that start with the last character
-            possible_countries = [c for c in data if c['name'][0].lower() == last_char]
-            if possible_countries:
-                country = random.choice(possible_countries)
-            else:
-                print("No country found that starts with this letter. Game Over!")
-                break
+        # Choose a random country that hasn't been used yet
+        available_countries = [country for country in data if country['name'] not in used_countries]
+        
+        if not available_countries:  # No more countries to choose from
+            print(f"Game Over! All countries have been used. Your final score: {score}")
+            break
+        
+        country = random.choice(available_countries)
+        used_countries.add(country['name'])  # Mark this country as used
         
         print(f"Starting country: {country['name']}")
         
@@ -6040,15 +6035,23 @@ def start_game():
         answer = input("Your answer: ").strip().lower()  # Convert user input to lowercase
         
         # Check if the answer starts with the correct letter and exists in the data
-        if any(c['name'].lower() == answer for c in data) and answer[0] == last_char:
+        if any(c['name'].lower() == answer for c in data) and answer[0] == last_char and answer.capitalize() not in used_countries:
             score += 1
             print(f"Correct! Your score is {score}.")
             
-            # Update the last country for the next round
-            last_country = answer
+            # Find a country that starts with the last character of the user's input
+            matching_countries = [c['name'] for c in data if c['name'].lower().startswith(answer[-1].lower()) and c['name'] not in used_countries]
+            
+            if matching_countries:
+                next_country = random.choice(matching_countries)
+                print(f"Next country: {next_country}")
+            else:
+                print("No country found that starts with this letter. Game Over!")
+                break
         else:
             print(f"Incorrect. The correct answer was {country['name']}.")
             break  # End the game if the user fails
+    
     
     print(f"\nGame Over! Your final score: {score}")
 
