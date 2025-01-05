@@ -6040,42 +6040,56 @@ def start_game():
 
 @app.route('/guess', methods=['POST'])
 def guess():
-    user_guess = request.form['guess'].strip().capitalize()  # Get and format the user's input
-    last_char = session['current_country']['name'][-1].lower()  # Get the last character of the current country
+    user_guess = request.form['guess'].strip().capitalize()
+    
+    # Ensure user_guess is not empty
+    if not user_guess:
+        return render_template('game_over.html', score=session['score'], error_message="You didn't enter a guess.")
 
-    # Check if the user's guess starts with the correct letter
-    if user_guess[0].lower() == last_char and user_guess not in session['used_countries']:
+    last_char = session['current_country']['name'][-1].lower()
+    used_countries = session['used_countries']
+
+    if is_valid_guess(user_guess, last_char, used_countries):
         session['score'] += 1
         session['used_countries'].append(user_guess)
 
-        # Check if the guess exists in the dataset by matching the country name
-        matching_country = None
-        for country in data:
-            if country['name'].lower() == user_guess.lower():  # Match user input with country name
-                matching_country = country
-                break
-        
+        # Match user input with country dataset
+        country_dict = {country['name'].lower(): country for country in data}
+        matching_country = country_dict.get(user_guess.lower())
+
         if matching_country:
-            # If a matching country is found, update the game with the new country
             next_char = matching_country['name'][-1].lower()
             matching_countries = [
-                country for country in data 
+                country for country in data
                 if country['name'][0].lower() == next_char and country['name'] not in session['used_countries']
             ]
-            
+
             if matching_countries:
                 next_country = random.choice(matching_countries)
-                session['used_countries'].append(next_country['name'])
-                session['current_country'] = next_country
-                return render_template('game.html', country=next_country, score=session['score'])
             else:
-                return render_template('game_over.html', score=session['score'])
+                # Choose a random unused country if no matching countries are found
+                unused_countries = [
+                    country for country in data if country['name'] not in session['used_countries']
+                ]
+                if not unused_countries:
+                    return render_template('game_over.html', score=session['score'], error_message="No more valid countries available!")
+                next_country = random.choice(unused_countries)
+            
+            session['used_countries'].append(next_country['name'])
+            session['current_country'] = next_country
+            return render_template('game.html', country=next_country, score=session['score'])
         else:
-            # If no matching country is found in the dataset
             return render_template('game_over.html', score=session['score'], error_message="Your guess is not a valid country.")
     else:
-        # If the guess is invalid based on the last letter or if it has already been used
-        return render_template('game_over.html', score=session['score'], error_message="Invalid guess. Either it doesn't start with the correct letter or you've already used it.")
+        return render_template(
+            'game_over.html', 
+            score=session['score'], 
+            error_message=f"Invalid guess. Your guess must start with '{last_char.upper()}' or hasn't been used already."
+        )
+
+
+def is_valid_guess(guess, last_char, used_countries):
+    return guess[0].lower() == last_char and guess not in used_countries
 
 
 @app.route('/game_over')
