@@ -1,3 +1,0 @@
-import secrets
-print(secrets.token_hex(32))  # Generate a 32-byte random key
-d9f6134b83c164633ab1c8c94b768c4a20a0269ff8abc664b6bb8342f90f45ae
