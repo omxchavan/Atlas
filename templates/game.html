@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas Game</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .emoji {
+            font-size: 2em;
+        }
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+        .error-message {
+            color: red;
+        }
+        .score {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center">
+        <h1 class="display-4">Atlas Game</h1>
+        <p class="lead">Guess the name of a country that starts with the last letter of the current country!</p>
+        
+        <!-- Current country display -->
+        <div class="current-country mb-4">
+            <p class="h4">Current Country: <strong>{{ country.name }}</strong> <span class="emoji">{{ country.emoji }}</span></p>
+        </div>
+        
+        <!-- Score display -->
+        <div class="score mb-4">
+            <p class="h5">Your Score: <strong>{{ score }}</strong></p>
+        </div>
+
+        <!-- Game form to input guesses -->
+        <form action="/guess" method="post" class="mt-4">
+            <div class="form-group">
+                <label for="guess" class="form-label">Your Guess:</label>
+                <input type="text" id="guess" name="guess" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+
+        <!-- Error message if the guess is wrong or the game ends -->
+        {% if error_message %}
+            <div class="alert alert-danger mt-3" role="alert">
+                {{ error_message }}
+            </div>
+        {% endif %}
+        
+        <!-- Footer for extra information -->
+        <footer class="mt-4">
+            <p class="text-muted">Remember: The next country should start with the last letter of the current country!</p>
+        </footer>
+    </div>
+
+    <!-- Include Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,8 +1,8 @@
-import json
+from flask import Flask, render_template, request, session, redirect, url_for
 import random
 
-
-
+app = Flask(__name__)
+app.secret_key = 'd9f6134b83c164633ab1c8c94b768c4a20a0269ff8abc664b6bb8342f90f45ae'
 # Sample JSON data (add more countries here in the same format)
 data = [
   {
@@ -6008,53 +6008,87 @@ data = [
 ]
     # Add more countries here in the same format
 # Function to start the game
+
+@app.route('/')
+def index():
+    # Initialize game state if not already in session
+    if 'score' not in session:
+        session['score'] = 0
+        session['used_countries'] = []
+    return render_template('index.html', score=session['score'])
+
+
+@app.route('/start', methods=['POST'])
 def start_game():
-    print("Welcome to the Atlas Game!")
-    score = 0
-    used_countries = set()  # To keep track of the used countries
+    # Ensure that the score and used countries are reset before starting a new game
+    session['score'] = 0
+    session['used_countries'] = []
+
+    # Choose a random starting country that hasn't been used yet
+    available_countries = [c for c in data if c['name'] not in session['used_countries']]
     
-    # The game will continue as long as the player answers correctly
-    while True:
-        # Choose a random country that hasn't been used yet
-        available_countries = [country for country in data if country['name'] not in used_countries]
+    if not available_countries:
+        return redirect(url_for('game_over'))
+
+    country = random.choice(available_countries)
+    session['current_country'] = country
+    session['used_countries'].append(country['name'])
+
+    # Pass the current country and score to the template
+    return render_template('game.html', country=country, score=session['score'])
+
+
+@app.route('/guess', methods=['POST'])
+def guess():
+    user_guess = request.form['guess'].strip().capitalize()  # Get and format the user's input
+    last_char = session['current_country']['name'][-1].lower()  # Get the last character of the current country
+
+    # Check if the user's guess starts with the correct letter
+    if user_guess[0].lower() == last_char and user_guess not in session['used_countries']:
+        session['score'] += 1
+        session['used_countries'].append(user_guess)
+
+        # Check if the guess exists in the dataset by matching the country name
+        matching_country = None
+        for country in data:
+            if country['name'].lower() == user_guess.lower():  # Match user input with country name
+                matching_country = country
+                break
         
-        if not available_countries:  # No more countries to choose from
-            print(f"Game Over! All countries have been used. Your final score: {score}")
-            break
-        
-        country = random.choice(available_countries)
-        used_countries.add(country['name'])  # Mark this country as used
-        
-        print(f"Starting country: {country['name']}")
-        
-        # Get the last character of the country's name
-        last_char = country['name'][-1].lower()
-        print(f"Guess the country that starts with the letter '{last_char.upper()}':")
-        
-        # Prompt the user to input the name of the country
-        answer = input("Your answer: ").strip().lower()  # Convert user input to lowercase
-        
-        # Check if the answer starts with the correct letter and exists in the data
-        if any(c['name'].lower() == answer for c in data) and answer[0] == last_char and answer.capitalize() not in used_countries:
-            score += 1
-            print(f"Correct! Your score is {score}.")
-            
-            # Find a country that starts with the last character of the user's input
-            matching_countries = [c['name'] for c in data if c['name'].lower().startswith(answer[-1].lower()) and c['name'] not in used_countries]
+        if matching_country:
+            # If a matching country is found, update the game with the new country
+            next_char = matching_country['name'][-1].lower()
+            matching_countries = [
+                country for country in data 
+                if country['name'][0].lower() == next_char and country['name'] not in session['used_countries']
+            ]
             
             if matching_countries:
                 next_country = random.choice(matching_countries)
-                print(f"Next country: {next_country}")
+                session['used_countries'].append(next_country['name'])
+                session['current_country'] = next_country
+                return render_template('game.html', country=next_country, score=session['score'])
             else:
-                print("No country found that starts with this letter. Game Over!")
-                break
+                return render_template('game_over.html', score=session['score'])
         else:
-            print(f"Incorrect. The correct answer was {country['name']}.")
-            break  # End the game if the user fails
-    
-    
-    print(f"\nGame Over! Your final score: {score}")
+            # If no matching country is found in the dataset
+            return render_template('game_over.html', score=session['score'], error_message="Your guess is not a valid country.")
+    else:
+        # If the guess is invalid based on the last letter or if it has already been used
+        return render_template('game_over.html', score=session['score'], error_message="Invalid guess. Either it doesn't start with the correct letter or you've already used it.")
 
-# Main execution
-if __name__ == "__main__":
-    start_game()
+
+@app.route('/game_over')
+def game_over():
+    # Game over page, resetting score and used countries
+    score = session.get('score', 0)
+    
+    # Ensure game resets properly after a game over
+    session['score'] = 0
+    session['used_countries'] = []
+    
+    return render_template('game_over.html', score=score)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
