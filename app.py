@@ -3031,7 +3031,7 @@ data = [
   },
   {
     "id": 128,
-    "name": "Macau S.A.R.",
+    "name": "Macau S.A.R",
     "iso3": "MAC",
     "iso2": "MO",
     "numeric_code": 446,
@@ -4519,7 +4519,7 @@ data = [
   },
   {
     "id": 190,
-    "name": "Saint-Martin (French part)",
+    "name": "Saint-Martin",
     "iso3": "MAF",
     "iso2": "MF",
     "numeric_code": 663,
@@ -4759,7 +4759,7 @@ data = [
   },
   {
     "id": 250,
-    "name": "Sint Maarten (Dutch part)",
+    "name": "Sint Maarten",
     "iso3": "SXM",
     "iso2": "SX",
     "numeric_code": 534,
@@ -5767,7 +5767,7 @@ data = [
   },
   {
     "id": 238,
-    "name": "Vatican City State (Holy See)",
+    "name": "Vatican City State",
     "iso3": "VAT",
     "iso2": "VA",
     "numeric_code": 336,
@@ -5839,7 +5839,7 @@ data = [
   },
   {
     "id": 241,
-    "name": "Virgin Islands (British)",
+    "name": "Virgin Islands",
     "iso3": "VGB",
     "iso2": "VG",
     "numeric_code": "092",
@@ -5863,7 +5863,7 @@ data = [
   },
   {
     "id": 242,
-    "name": "Virgin Islands (US)",
+    "name": "Virgin Islands",
     "iso3": "VIR",
     "iso2": "VI",
     "numeric_code": 850,
